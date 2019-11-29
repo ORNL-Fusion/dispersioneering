@@ -1,4 +1,9 @@
-function [eps,sigma] = epsilon_cold (f, amu, Z, B, n, nu_omg)
+function [eps,sigma,S,D,P,R,L] = epsilon_cold (f, amu, Z, B, n)
+
+num_species = numel(amu);
+
+assert(numel(Z)==num_species);
+assert(numel(n)==num_species);
 
 phys = constants();
 
@@ -11,21 +16,38 @@ amu0 = phys.('amu');
 validateattributes(B,{'numeric'},{'nonnegative'});
 
 w0 = 2 * pi * f;
-w = w0 * complex( 1, nu_omg);
+w = w0 * complex( 1, 0);
 m = amu * amu0;
 q = Z * e;
 
-wp = sqrt( n * q^2 / (m * eps0) );
+
 
 % Swanson pg 23 - 24
 % ------------------
 
-eps_swan = q/abs(q);
-wc_swan = abs(q) * B / m;
+eps_swan = q./abs(q);
+wc_swan = abs(q) * B ./ m;
 
-K1 = 1 - wp^2 / (w^2 - wc_swan^2);
-K2 = (1/1i) * eps_swan * wc_swan * wp^2 / (w * (w^2 - wc_swan^2) );
-K3 = 1 - wp^2 / w^2;
+S = 1;
+D = 0;
+P = 1;
+
+for s=1:num_species
+    
+    wp = sqrt( n(s) * q(s)^2 / (m(s) * eps0) );
+    
+    S = S - wp^2 / (w^2 - wc_swan(s)^2);
+    D = D + eps_swan(s) * wc_swan(s) * wp^2 / (w * (w^2 - wc_swan(s)^2) );
+    P = P - wp^2 / w^2;
+    
+end
+
+K1 = S;
+K2 = D/1i;
+K3 = P;
+
+R = S+D;
+L = S-D;
 
 epsilon_swan = complex(zeros(3,3));
 

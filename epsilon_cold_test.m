@@ -11,9 +11,8 @@ amu=2;
 Z=1;
 B=1;
 n=3.677e19;
-nu_omg=0;
 
-[actSolution_eps,actSolution_sig] = epsilon_cold(f,amu,Z,B,n,nu_omg);
+[actSolution_eps,actSolution_sig] = epsilon_cold(f,amu,Z,B,n);
 
 expSolution_sig = complex(zeros(3,3));
 
