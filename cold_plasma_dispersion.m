@@ -4,17 +4,18 @@ phys = constants();
 
 c = phys.('c');
 me_amu = phys.('me_amu');
+zi = complex(0,1);
 
 % Map the space over a variable - here B
 
-f = 30e6;
+f = 7.5e6;
 w = 2*pi*f;
-k_par = 10;
+k_par = 20;
 n_par = k_par * c / w;
 
 % Species
 
-amu = [me_amu, 1];
+amu = [me_amu, 2];
 Z   = [-1,1];
 
 num_points = 100;
@@ -22,13 +23,13 @@ x = linspace(0,0.1,num_points);
 
 % B field
 
-B = x.*0 + 1.0;
+B = x.*0 + 1.2;
 
 % Density
 
-n0 = 10.^linspace(16,20,num_points);
+den = 10.^linspace(18,20,num_points);
 
-n = [n0; n0];
+n = [den; den];
 
 % Produce 2D space over k_per and B
 
@@ -52,7 +53,7 @@ end
 
 % k_per range
 
-num_k_per = 1000;
+num_k_per = 100;
 
 k_per_min = -1000;
 k_per_max = +1000;
@@ -88,7 +89,7 @@ for i=1:num_points
         
         n_per_init_re = initial_k_pers(k) * c / w;
         
-        n_per_init = n_per_init_re + 0i;
+        n_per_init = n_per_init_re + 0*zi;
         
         [n_per_out(i,k),fval,exitflag,output] = fsolve(@det_fun,n_per_init);
         
@@ -98,7 +99,7 @@ for i=1:num_points
         
         n_per_init_im = initial_k_pers(k) * c / w;
         
-        n_per_init = 0 + i*n_per_init_im;
+        n_per_init = 0 + zi*n_per_init_im;
         
         [n_per_out(i,k+num_init_k_per),fval,exitflag,output] = fsolve(@det_fun,n_per_init);
         
@@ -130,7 +131,10 @@ plot(x,B(:))
 subplot(3,1,3)
 max_val = max(abs(det_array(:)));
 norm_det_array = det_array./max_val;
-c = contour(x,k_per,norm_det_array,[-0.01,-0.001,0.0,0.001,+0.01]);
+cc = contour(x,k_per,norm_det_array,[-0.01,-0.001,0.0,0.001,+0.01]);
+
+% spatial plot
+
 figure()
 plot(x,real(n_per_sq1),'-b');
 hold on
@@ -145,9 +149,29 @@ for bb=1:numel(n_per_out(1,:))
     p = plot(x,real(n_per_out(:,bb)),'o','Color','black','LineWidth',2);
     p = plot(x,imag(n_per_out(:,bb)),'r','Color','black','LineWidth',2);
 end
+hold off
 ylim([k_per_min,k_per_max]*c/w);
 
+% density plot
+
+figure()
+semilogx(den,real(n_per_sq1)*w/c,'-b');
+hold on
+plot(den,real(n_per_sq2)*w/c,'-b');
+plot(den,real(n_per_sq3)*w/c,'-b');
+plot(den,real(n_per_sq4)*w/c,'-b');
+plot(den,imag(n_per_sq1)*w/c,'-r');
+plot(den,imag(n_per_sq2)*w/c,'-r');
+plot(den,imag(n_per_sq3)*w/c,'-r');
+plot(den,imag(n_per_sq4)*w/c,'-r');
+for bb=1:numel(n_per_out(1,:))
+    p = plot(den,real(n_per_out(:,bb)*w/c),'o','Color','black','LineWidth',2);
+    p = plot(den,imag(n_per_out(:,bb)*w/c),'o','Color','red',  'LineWidth',2);
+end
 hold off
+ylim([k_per_min,k_per_max]);
+symlog();
+disp([' ']);
 
 %     function det_re_im = det_fun(n_per_re_im)
     function det = det_fun(n_per)
@@ -158,7 +182,7 @@ hold off
     
     % From pg 177 Brambilla
     
-    disp([num2str(n_per)]);
+%     disp([num2str(n_per)]);
     A1a = S;
     B1a = R*L + P*S - n_par^2 * (P+S);
     C1a = P*(n_par^2-R)*(n_par^2-L);
