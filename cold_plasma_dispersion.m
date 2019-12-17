@@ -179,11 +179,10 @@ disp([' ']);
 %     n_per = complex(n_per_re_im(1),n_per_re_im(2))
           
     [eps,sigma,S,D,P,R,L] = epsilon_cold(f, amu, Z, B0, n0);
-    T_keV = [0.01,0.01];
-    k_per = n_per * w / c;
-    [eps_hot] = epsilon_hot(f, amu, Z, B0, n0, T_keV, k_per, k_par);
+%     T_keV = [0.01,0.01];
+%     k_per = n_per * w / c;
+%     [eps_hot] = epsilon_hot(f, amu, Z, B0, n0, T_keV, k_per, k_par);
     
-    eps = sum(eps_hot,3);
     
     % From pg 177 Brambilla
     
@@ -193,6 +192,41 @@ disp([' ']);
     C1a = P*(n_par^2-R)*(n_par^2-L);
     
     det = A1a .* n_per^4 - B1a .* n_per^2 + C1a;
+    
+eps = transpose(eps);
+    exx = eps(1,1);
+    exy = eps(1,2);
+    exz = eps(1,3);
+    
+    eyx = eps(2,1);
+    eyy = eps(2,2);
+    eyz = eps(2,3);
+    
+    ezx = eps(3,1);
+    ezy = eps(3,2);
+    ezz = eps(3,3);
+    
+    kx = k_per;
+    kz = k_par;
+    k0 = w/c;
+    
+    det = ezy.*k0.^4.*(-(exz.*eyx.*k0.^2) + exx.*eyz.*k0.^2 + ...
+        kz.*(eyx.*kx + eyz.*kz)) + ...
+        (-(ezx.*k0.^2) + kx.*kz).* ...
+        (exy.*eyz.*k0.^4 - exz.*k0.^2.*(eyy.*k0.^2 + kx.^2 + kz.^2) + ...
+        kx.*kz.*(eyy.*k0.^2 + kx.^2 + kz.^2)) + ...
+        (-(ezz.*k0.^2) - kx.^2).* ...
+        (-(exy.*eyx.*k0.^4) + (exx.*k0.^2 + kz.^2).*(eyy.*k0.^2 + kx.^2 + kz.^2));
+    
+%     det = k0.^2.*(exx.*((-(eyz.*ezy) + eyy.*ezz).*k0.^4 - (eyy + ezz).*k0.^2.*kx.^2 + ...
+%             kx.^4) + kx.*(-(eyy.*ezx.*k0.^2) + eyx.*ezy.*k0.^2 + ezx.*kx.^2).*kz + ...
+%          ((eyz.*ezy - (exx + eyy).*ezz).*k0.^2 + (exx + ezz).*kx.^2).*kz.^2 + ...
+%          ezx.*kx.*kz.^3 + ezz.*kz.^4 + ...
+%          exy.*k0.^2.*(eyz.*ezx.*k0.^2 - eyx.*ezz.*k0.^2 + eyx.*kx.^2 + ...
+%             eyz.*kx.*kz) + exz.*(eyx.*ezy.*k0.^4 - ...
+%             eyy.*(ezx.*k0.^4 + k0.^2.*kx.*kz) + ...
+%            (ezx.*k0.^2 + kx.*kz).*(kx.^2 + kz.^2)));
+%  det/det0
     
 %     det_re_im(1) = real(det);
 %     det_re_im(2) = imag(det);

@@ -98,25 +98,23 @@ ezx = n_par .* n_per .* eta_hat;
 ezy = -i .* n_par .* n_per .* eps_hat;
 ezz = Phat;
 
-epsilon_r = zeros(3,3,num_spec);
+epsilon_r = zeros(3,3);
 epsilon = complex(epsilon_r,0);
 sigma = epsilon;
 
-epsilon(1,1,:) = exx;
-epsilon(1,2,:) = exy;
-epsilon(1,3,:) = exz;
+epsilon(1,1) = exx;
+epsilon(1,2) = exy;
+epsilon(1,3) = exz;
 
-epsilon(2,1,:) = eyx;
-epsilon(2,2,:) = eyy;
-epsilon(2,3,:) = eyz;
+epsilon(2,1) = eyx;
+epsilon(2,2) = eyy;
+epsilon(2,3) = eyz;
 
-epsilon(3,1,:) = ezx;
-epsilon(3,2,:) = ezy;
-epsilon(3,3,:) = ezz;
+epsilon(3,1) = ezx;
+epsilon(3,2) = ezy;
+epsilon(3,3) = ezz;
 
-for alp = 1:num_spec
-    sigma(:,:,alp) = (epsilon(:,:,alp) - eye(3)) * w * eps0 / i;
-end
+sigma = (epsilon - eye(3)) * w * eps0 / i;
 
 end
 
