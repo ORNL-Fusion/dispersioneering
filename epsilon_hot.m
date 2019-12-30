@@ -11,6 +11,14 @@ eps0 = phys.('eps0');
 e = phys.('e');
 amu0 = phys.('amu');
 
+% get Z-function interpolant
+
+persistent Z_interp
+
+if isempty(Z_interp)  
+    Z_interp = get_z_function_interpolant(); 
+end
+
 if abs(k_per) < 1e-5
     k_per = 1e-5*sign(k_per);
 end
@@ -55,13 +63,28 @@ for alp = 1:num_spec
         x0 = w / (k_par * v_th);
         
         Zeta_C = (nu_omg * w) / (k_par * v_th);
-        [Z,Zp] = z_function(x,Zeta_C);
+        
+        this_Z_re = Z_interp.Z_re(x);
+        this_Z_im = Z_interp.Z_im(x);
+        this_Zp_re = Z_interp.Zp_re(x);
+        this_Zp_im = Z_interp.Zp_im(x);
+        
+        Z = complex(this_Z_re,this_Z_im);
+        Zp = complex(this_Zp_re,this_Zp_im);
+        
+        if x < Z_interp.min_zeta_re || x > Z_interp.max_zeta_re
+            % Analytic limits off the end of the Z function table
+            Z = complex(-1./x,0);
+            Zp = complex(1/x.^2,0);
+        end
+        
+%         [Z,Zp] = z_function(x,Zeta_C);
         
         In = besseli(n,lambda);
         Inp = besseli_prime(n,lambda);
         
         Ssum = Ssum + n.^2 ./ lambda .* In .* exp(-lambda) .* (-x0.*Z);
-        Dsum = Dsum + ( Inp - In ) .* exp(-lambda) .* (-x0 .* Z );
+        Dsum = Dsum + n .* ( Inp - In ) .* exp(-lambda) .* (-x0 .* Z );
         Psum = Psum + In .* exp(-lambda) .* (x0 .* x .* Zp );
         
         eta_sum = eta_sum + n./lambda .* In .* exp(-lambda) .* (x0.^2 .* Zp );
@@ -124,52 +147,3 @@ Ip = besseli(n-1,zeta) - n./zeta .* besseli(n,zeta);
 
 end
 
-function [Z, Zp] = z_function(zeta, zeta_C)
-
-persistent zeta_re
-persistent Z_re
-persistent Z_im
-persistent Zp_re
-persistent Zp_im
-
-% Read Z function from file if not done so already
-
-if isempty(zeta_re)
-    
-    z_function_table = 'zFunction.nc';
-    ncid = netcdf.open(z_function_table);
-    
-    arg_re_id = netcdf.inqVarID(ncid,'arg_re');
-    Z_re_id = netcdf.inqVarID(ncid,'Z_re');
-    Z_im_id = netcdf.inqVarID(ncid,'Z_im');
-    Zp_re_id = netcdf.inqVarID(ncid,'Zp_re');
-    Zp_im_id = netcdf.inqVarID(ncid,'Zp_im');
-    
-    zeta_re = netcdf.getVar(ncid,arg_re_id);
-    Z_re = netcdf.getVar(ncid,Z_re_id);
-    Z_im = netcdf.getVar(ncid,Z_im_id);
-    Zp_re = netcdf.getVar(ncid,Zp_re_id);
-    Zp_im = netcdf.getVar(ncid,Zp_im_id);
-    
-end
-
-if zeta < min(zeta_re) || zeta > max(zeta_re)
-    % Analytic limits off the end of the Z function table
-    Z = complex(-1./zeta,0);
-    Zp = complex(1/zeta.^2,0);
-else
-    this_Z_re = interp1(zeta_re,Z_re, real(zeta),'spline');
-    this_Z_im = interp1(zeta_re,Z_im, real(zeta),'spline');
-    this_Zp_re = interp1(zeta_re,Zp_re, real(zeta),'spline');
-    this_Zp_im = interp1(zeta_re,Zp_im, real(zeta),'spline');
-    
-    Z = complex(this_Z_re,this_Z_im);
-    Zp = complex(this_Zp_re,this_Zp_im);
-    
-end
-
-factor = complex(1,0) - complex(0,zeta_C)*Z;
-Z = Z / factor;
-Zp = Zp / (factor.*factor);
-
-end

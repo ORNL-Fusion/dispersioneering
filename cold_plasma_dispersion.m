@@ -28,6 +28,7 @@ B = x.*0 + 1.2;
 % Density
 
 den = 10.^linspace(18,20,num_points);
+% den = 10.^linspace(19.3,19.8,num_points);
 
 n = [den; den];
 
@@ -85,25 +86,30 @@ for i=1:num_points
     initial_k_pers = linspace(k_per_min,k_per_max,10);
     num_init_k_per = numel(initial_k_pers);
     
+    cnt = 1;
     for k = 1:num_init_k_per
-        
-        n_per_init_re = initial_k_pers(k) * c / w;
-        
-        n_per_init = n_per_init_re + 0*zi;
-        
-        [n_per_out(i,k),fval,exitflag,output] = fsolve(@det_fun,n_per_init);
-        
+        for j = 1:num_init_k_per
+                        
+            n_per_init_re = initial_k_pers(k) * c / w;
+            n_per_init_im = initial_k_pers(j) * c / w;
+           
+            n_per_init = n_per_init_re + n_per_init_im*zi;
+            
+            [n_per_out(i,cnt),fval,exitflag,output] = fsolve(@det_fun,n_per_init);
+            
+            cnt = cnt + 1;
+            
+        end
     end
     
-    for k = 1:num_init_k_per
+%           for j = 1:num_init_k_per   
+%         n_per_init_im = initial_k_pers(k) * c / w;
+%         
+%         n_per_init = 0 + zi*n_per_init_im;
+%         
+%         [n_per_out(i,k+num_init_k_per),fval,exitflag,output] = fsolve(@det_fun,n_per_init);
         
-        n_per_init_im = initial_k_pers(k) * c / w;
-        
-        n_per_init = 0 + zi*n_per_init_im;
-        
-        [n_per_out(i,k+num_init_k_per),fval,exitflag,output] = fsolve(@det_fun,n_per_init);
-        
-    end
+%     end
     
     aa=A1(i);
     bb=B1(i);
@@ -170,30 +176,52 @@ for bb=1:numel(n_per_out(1,:))
 end
 hold off
 ylim([k_per_min,k_per_max]);
+
+
+figure()
+semilogx(den,real(n_per_sq1)*w/c,'-b');
+hold on
+plot(den,real(n_per_sq2)*w/c,'-b');
+plot(den,real(n_per_sq3)*w/c,'-b');
+plot(den,real(n_per_sq4)*w/c,'-b');
+plot(den,imag(n_per_sq1)*w/c,'-r');
+plot(den,imag(n_per_sq2)*w/c,'-r');
+plot(den,imag(n_per_sq3)*w/c,'-r');
+plot(den,imag(n_per_sq4)*w/c,'-r');
+for bb=1:numel(n_per_out(1,:))
+    p = plot(den,real(n_per_out(:,bb)*w/c),'o','Color','black','LineWidth',2);
+    p = plot(den,imag(n_per_out(:,bb)*w/c),'o','Color','red',  'LineWidth',2);
+end
+hold off
+ylim([k_per_min,k_per_max]);
 symlog();
 disp([' ']);
 
 %     function det_re_im = det_fun(n_per_re_im)
     function det = det_fun(n_per)
         
-%     n_per = complex(n_per_re_im(1),n_per_re_im(2))
-          
-    [eps,sigma,S,D,P,R,L] = epsilon_cold(f, amu, Z, B0, n0);
-%     T_keV = [0.01,0.01];
-%     k_per = n_per * w / c;
-%     [eps_hot] = epsilon_hot(f, amu, Z, B0, n0, T_keV, k_per, k_par);
+        
+    % Cold    
+        
+%     [eps,sigma,S,D,P,R,L] = epsilon_cold(f, amu, Z, B0, n0);
     
+    % Hot
     
+    T_eV = [1000,1000];
+    k_per = n_per * w / c;
+    [eps] = epsilon_hot(f, amu, Z, B0, n0, T_eV, k_per, k_par);
+    
+    % Quadratic form for determinant
     % From pg 177 Brambilla
+%     
+%     A1a = S;
+%     B1a = R*L + P*S - n_par^2 * (P+S);
+%     C1a = P*(n_par^2-R)*(n_par^2-L);
+%     
+%     det = A1a .* n_per^4 - B1a .* n_per^2 + C1a;   
     
-%     disp([num2str(n_per)]);
-    A1a = S;
-    B1a = R*L + P*S - n_par^2 * (P+S);
-    C1a = P*(n_par^2-R)*(n_par^2-L);
+    % Generalized determinant  
     
-    det = A1a .* n_per^4 - B1a .* n_per^2 + C1a;
-    
-eps = transpose(eps);
     exx = eps(1,1);
     exy = eps(1,2);
     exz = eps(1,3);
@@ -206,32 +234,18 @@ eps = transpose(eps);
     ezy = eps(3,2);
     ezz = eps(3,3);
     
-    kx = k_per;
-    kz = k_par;
+    kx = n_per * w/c;
+    kz = n_par * w/c; 
     k0 = w/c;
     
-    det = ezy.*k0.^4.*(-(exz.*eyx.*k0.^2) + exx.*eyz.*k0.^2 + ...
-        kz.*(eyx.*kx + eyz.*kz)) + ...
-        (-(ezx.*k0.^2) + kx.*kz).* ...
-        (exy.*eyz.*k0.^4 - exz.*k0.^2.*(eyy.*k0.^2 + kx.^2 + kz.^2) + ...
-        kx.*kz.*(eyy.*k0.^2 + kx.^2 + kz.^2)) + ...
-        (-(ezz.*k0.^2) - kx.^2).* ...
-        (-(exy.*eyx.*k0.^4) + (exx.*k0.^2 + kz.^2).*(eyy.*k0.^2 + kx.^2 + kz.^2));
-    
-%     det = k0.^2.*(exx.*((-(eyz.*ezy) + eyy.*ezz).*k0.^4 - (eyy + ezz).*k0.^2.*kx.^2 + ...
-%             kx.^4) + kx.*(-(eyy.*ezx.*k0.^2) + eyx.*ezy.*k0.^2 + ezx.*kx.^2).*kz + ...
-%          ((eyz.*ezy - (exx + eyy).*ezz).*k0.^2 + (exx + ezz).*kx.^2).*kz.^2 + ...
-%          ezx.*kx.*kz.^3 + ezz.*kz.^4 + ...
-%          exy.*k0.^2.*(eyz.*ezx.*k0.^2 - eyx.*ezz.*k0.^2 + eyx.*kx.^2 + ...
-%             eyz.*kx.*kz) + exz.*(eyx.*ezy.*k0.^4 - ...
-%             eyy.*(ezx.*k0.^4 + k0.^2.*kx.*kz) + ...
-%            (ezx.*k0.^2 + kx.*kz).*(kx.^2 + kz.^2)));
-%  det/det0
-    
-%     det_re_im(1) = real(det);
-%     det_re_im(2) = imag(det);
+    det = -(ezy.*k0.^4.*((exz.*eyx - exx.*eyz).*k0.^2 + eyx.*kx.*kz + eyz.*kz.^2)) + ...
+        (-(ezx.*k0.^2) - kx.*kz).* ...
+        (exy.*eyz.*k0^4 + exz.*k0.^2.*(-(eyy.*k0.^2) + kx.^2 + kz.^2) + ...
+        kx.*kz.*(-(eyy.*k0.^2) + kx.^2 + kz.^2)) + ...
+        (-(ezz.*k0.^2) + kx.^2).* ...
+        (-(exy.*eyx.*k0.^4) + (-(exx.*k0.^2) + kz.^2).* ...
+        (-(eyy.*k0.^2) + kx.^2 + kz.^2));
     
     end
-
 
 end
