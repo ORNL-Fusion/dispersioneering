@@ -207,7 +207,7 @@ disp([' ']);
     
     % Hot
     
-    T_eV = [1000,1000];
+    T_eV = [0.1,0.1];
     k_per = n_per * w / c;
     [eps] = epsilon_hot(f, amu, Z, B0, n0, T_eV, k_per, k_par);
     
