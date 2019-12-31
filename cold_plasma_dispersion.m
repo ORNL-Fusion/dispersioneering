@@ -18,7 +18,7 @@ n_par = k_par * c / w;
 amu = [me_amu, 2];
 Z   = [-1,1];
 
-num_points = 10;
+num_points = 50;
 x = linspace(0,0.1,num_points);
 
 % B field
@@ -76,13 +76,10 @@ end
 % Try a root finder approach
 
 for i=1:num_points
-    
-    
+     
     B0 = B(i);
     n0 = n(:,i);
-    
-    %     n_per_init = [0,0];
-    
+        
     initial_k_pers = linspace(k_per_min,k_per_max,10);
     num_init_k_per = numel(initial_k_pers);
     
@@ -95,21 +92,18 @@ for i=1:num_points
            
             n_per_init = n_per_init_re + n_per_init_im*zi;
             
-            [n_per_out(i,cnt),fval,exitflag,output] = fsolve(@det_fun,n_per_init);
+            options = optimoptions('fsolve',...
+                'Display','none',...
+                'SpecifyObjectiveGradient',false,...
+                'CheckGradients',false);
+            
+            [n_per_out(i,cnt),fval,exitflag,output] = ...
+                fsolve(@det_fun,n_per_init,options);
             
             cnt = cnt + 1;
             
         end
     end
-    
-%           for j = 1:num_init_k_per   
-%         n_per_init_im = initial_k_pers(k) * c / w;
-%         
-%         n_per_init = 0 + zi*n_per_init_im;
-%         
-%         [n_per_out(i,k+num_init_k_per),fval,exitflag,output] = fsolve(@det_fun,n_per_init);
-        
-%     end
     
     aa=A1(i);
     bb=B1(i);
@@ -120,10 +114,11 @@ for i=1:num_points
     n_per_sq3(i) = -sqrt((-bb + sqrt(bb^2-4*aa*cc))/(2*aa));
     n_per_sq4(i) = -sqrt((-bb - sqrt(bb^2-4*aa*cc))/(2*aa));
     
+    disp(['point ', num2str(i), ' of ', num2str(num_points)]);
     disp(['n_per_out : ', num2str(n_per_out(i))]);
     disp(['n_per_q1 : ', num2str(n_per_sq1(i))]);
     disp(['n_per_q2 : ', num2str(n_per_sq2(i))]);
-    disp([' . ']);
+    disp(['  ']);
     
 end
 
@@ -197,9 +192,7 @@ ylim([k_per_min,k_per_max]);
 symlog();
 disp([' ']);
 
-%     function det_re_im = det_fun(n_per_re_im)
-    function det = det_fun(n_per)
-        
+    function [det,det_gradient] = det_fun(n_per)       
         
     % Cold    
         
@@ -207,7 +200,7 @@ disp([' ']);
     
     % Hot
     
-    T_eV = [0.1,0.1];
+    T_eV = [10,10];
     k_per = n_per * w / c;
     [eps] = epsilon_hot(f, amu, Z, B0, n0, T_eV, k_per, k_par);
     
@@ -245,6 +238,17 @@ disp([' ']);
         (-(ezz.*k0.^2) + kx.^2).* ...
         (-(exy.*eyx.*k0.^4) + (-(exx.*k0.^2) + kz.^2).* ...
         (-(eyy.*k0.^2) + kx.^2 + kz.^2));
+    
+    if nargout > 1
+        
+        % specific the gradient of the determinant also
+        
+        det_gradient = -((k0.^2.*w.*(c.^3.*kz.*(exy.*eyz.*k0.^2 - eyy.*ezx.*k0.^2 +...
+                eyx.*ezy.*k0.^2 + ezx.*kz.^2 + exz.*(-(eyy.*k0.^2) + kz.^2)) + ...
+             2.*c.^2.*(exy.*eyx.*k0.^2 + exz.*ezx.*k0.^2 + ezz.*kz.^2 +...
+                exx.*(-(eyy.*k0.^2) - ezz.*k0.^2 + kz.^2)).*n_per.*w + ...
+             3.*c.*(exz + ezx).*kz.*n_per.^2.*w.^2 + 4.*exx.*n_per.^3.*w.^3))/c.^4);
+    end
     
     end
 
