@@ -17,8 +17,9 @@ n_par = k_par * c / w;
 
 amu = [me_amu, 2];
 Z   = [-1,1];
+T_eV = [10,10];
 
-num_points = 50;
+num_points = 20;
 x = linspace(0,0.1,num_points);
 
 % B field
@@ -54,9 +55,9 @@ end
 
 % k_per range
 
-num_k_per = 10;
+num_k_per = 5;
 
-k_per_min = -1000;
+k_per_min = 0;
 k_per_max = +1000;
 
 k_per = linspace(k_per_min,k_per_max,num_k_per);
@@ -80,7 +81,7 @@ for i=1:num_points
     B0 = B(i);
     n0 = n(:,i);
         
-    initial_k_pers = linspace(k_per_min,k_per_max,10);
+    initial_k_pers = linspace(k_per_min,k_per_max,num_k_per);
     num_init_k_per = numel(initial_k_pers);
     
     cnt = 1;
@@ -121,37 +122,6 @@ for i=1:num_points
     disp(['  ']);
     
 end
-
-% % Plot the zero contour of the determinant
-% 
-% figure()
-% subplot(3,1,1)
-% semilogy(x,n(1,:))
-% subplot(3,1,2)
-% plot(x,B(:))
-% subplot(3,1,3)
-% max_val = max(abs(det_array(:)));
-% norm_det_array = det_array./max_val;
-% cc = contour(x,k_per,norm_det_array,[-0.01,-0.001,0.0,0.001,+0.01]);
-% 
-% % spatial plot
-% 
-% figure()
-% plot(x,real(n_per_sq1),'-b');
-% hold on
-% plot(x,real(n_per_sq2),'-b');
-% plot(x,real(n_per_sq3),'-b');
-% plot(x,real(n_per_sq4),'-b');
-% plot(x,imag(n_per_sq1),'-r');
-% plot(x,imag(n_per_sq2),'-r');
-% plot(x,imag(n_per_sq3),'-r');
-% plot(x,imag(n_per_sq4),'-r');
-% for bb=1:numel(n_per_out(1,:))
-%     p = plot(x,real(n_per_out(:,bb)),'o','Color','black','LineWidth',2);
-%     p = plot(x,imag(n_per_out(:,bb)),'r','Color','black','LineWidth',2);
-% end
-% hold off
-% ylim([k_per_min,k_per_max]*c/w);
 
 % density plot
 
@@ -200,7 +170,6 @@ disp([' ']);
     
     % Hot
     
-    T_eV = [10,10];
     k_per = n_per * w / c;
     [eps] = epsilon_hot(f, amu, Z, B0, n0, T_eV, k_per, k_par);
     

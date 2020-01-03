@@ -19,8 +19,13 @@ if isempty(Z_interp)
     Z_interp = get_z_function_interpolant(); 
 end
 
+% catch for zero k_per argument 
 if abs(k_per) < 1e-5
-    k_per = 1e-5*sign(k_per);
+    k_per_sign = sign(k_per);
+    if abs(k_per_sign) < 1
+        k_per_sign = 1;
+    end
+    k_per = 1e-5*k_per_sign;
 end
 
 w = 2*pi*f;
@@ -72,8 +77,9 @@ for alp = 1:num_spec
         Z = complex(this_Z_re,this_Z_im);
         Zp = complex(this_Zp_re,this_Zp_im);
         
+        % Analytic limits off the end of the Z function table
+        
         if x < Z_interp.min_zeta_re || x > Z_interp.max_zeta_re
-            % Analytic limits off the end of the Z function table
             Z = complex(-1./x,0);
             Zp = complex(1/x.^2,0);
         end
