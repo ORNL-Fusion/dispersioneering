@@ -26,38 +26,11 @@ bibliography: paper.bib
 
 # Summary
 
-It is often of interest to plasma physicists to know which plasma waves can propagate in a magnetized plasma at a given frequency. The calculation of such reduces to solving for which $k_{\perp}$ (or $k_{\parallel}$) the 0-D time-harmonic wave equation operator has zero determinant. For a cold (i.e., no finite-temperature effects) magnetized plasma, simple analytic polynomial expressions for this problem are available in several texts [@stix:2001; @brambilla:2001; @swanson:1999] and $k_{\perp}(\omega)$ (or $k_{\parallel}(\omega)$) being solveable via the quadratic equation. However, for a hot plasma where finite-temperature effects must be included, the problem becomes one of non-linear root finding with a rather complex objective function. As such, dispersion solvers for hot magnetized plasmas are not readily available. This repository aims to make available this capability for Matlab.  
+It is often of interest to plasma physicists to know which plasma waves can propagate in a magnetized plasma at a given frequency. The calculation of such reduces to solving for which $k_{\perp}$ (or $k_{\parallel}$) the 0-D time-harmonic wave equation operator has zero determinant. For a cold (i.e., no finite-temperature effects) magnetized plasma, simple analytic polynomial expressions for this problem are available in several texts [@stix1992waves; @brambilla1998kinetic; @swanson2003plasma] and $k_{\perp}(\omega)$ (or $k_{\parallel}(\omega)$) being solveable via the quadratic equation. However, for a hot plasma where finite-temperature effects must be included, the problem becomes one of non-linear root finding with a rather complex objective function. As such, dispersion solvers for hot magnetized plasmas are not readily available. This repository aims to make available this capability for Matlab.  
 
 ``dispersioneering`` is a Matlab package for calculating the general dispersion relation for hot or cold magnetized plasmas. It allows 1-D specification of plasma profiles of magnetic field $B(x)$ (T), density $n(x)$ ($m^{-3}$), and temperature $T(x)$ (eV) for an aribtrary number of species at a specified frequency. It calculates both hot and cold solutions, with the harmonic number an input parameter for the hot calculation. 
 
-signed to provide a class-based and user-friendly interface to fast (C or
-Cython-optimized) implementations of common operations such as gravitational
-potential and force evaluation, orbit integration, dynamical transformations,
-and chaos indicators for nonlinear dynamics. ``Gala`` also relies heavily on and
-interfaces well with the implementations of physical units and astronomical
-coordinate systems in the ``Astropy`` package [@astropy] (``astropy.units`` and
-``astropy.coordinates``).
-
-``Gala`` was designed to be used by both astronomical researchers and by
-students in courses on gravitational dynamics or astronomy. It has already been
-used in a number of scientific publications [@Pearson:2017] and has also been
-used in graduate courses on Galactic dynamics to, e.g., provide interactive
-visualizations of textbook material [@Binney:2008]. The combination of speed,
-design, and support for Astropy functionality in ``Gala`` will enable exciting
-scientific explorations of forthcoming data releases from the *Gaia* mission
-[@gaia] by students and experts alike.
-
-# Mathematics
-
-Single dollars ($) are required for inline mathematics e.g. $f(x) = e^{\pi/x}$
-
-Double dollars make self-standing equations:
-
-$$\Theta(x) = \left\{\begin{array}{l}
-0\textrm{ if } x < 0\cr
-1\textrm{ else}
-\end{array}\right.$$
-
+Figures can be included like this: ![Test figure.](figures/output1.png)
 
 # Citations
 
@@ -72,7 +45,7 @@ For a quick reference, the following citation commands can be used:
 
 # Figures
 
-Figures can be included like this: ![Test figure.](figures/output1.png)
+
 
 # Acknowledgements
 
