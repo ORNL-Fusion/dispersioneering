@@ -26,9 +26,9 @@ bibliography: paper.bib
 
 # Summary
 
-For a cold (i.e., no finite-temperature effects) magnetized plasma, simple analytic polynomial expressions for this problem are available in @stix:2001 several texts `[@stix:2001; @brambilla:2001; @swanson:2001]`
+For a cold (i.e., no finite-temperature effects) magnetized plasma, simple analytic polynomial expressions for this problem are available in several texts [@stix:2001; @brambilla:2001; @swanson:2001]
 
-``dispersioneering`` is a Matlab package for calculating the general dispersion relation for hot or cold magnetized plasmas. It allows 1-D specification of plasma profiles of magnetic field $B(x)$ (T), density $n(x)$ (m^-3), and temperature $T(x)$ (eV) for an aribtrary number of species at a specified frequency. It calculates both hot and cold solutions, with the harmonic number an input parameter for the hot calculation. 
+``dispersioneering`` is a Matlab package for calculating the general dispersion relation for hot or cold magnetized plasmas. It allows 1-D specification of plasma profiles of magnetic field $B(x)$ (``T``), density $n(x)$ (``m^-3``), and temperature $T(x)$ (``eV``) for an aribtrary number of species at a specified frequency. It calculates both hot and cold solutions, with the harmonic number an input parameter for the hot calculation. 
 
 signed to provide a class-based and user-friendly interface to fast (C or
 Cython-optimized) implementations of common operations such as gravitational
