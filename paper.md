@@ -26,9 +26,7 @@ bibliography: paper.bib
 
 # Summary
 
-It is often of interest to plasma physicists to know which plasma waves can propagate in a magnetized plasma at a given frequency. The calculation of such reduces to solving for which k_{\perpendicular} (or k_{\parallel}) the 0-D time-harmonic wave equation operator has zero determinant. For a cold (i.e., no finite-temperature effects) magnetized plasma, simple analytic polynomial expressions for this problem are available in several texts `[@stix:2001; @brambilla:2001; @swanson:1999]` and k_{\perp}(\omega) (or k_{\parallel}(\omega)) being solveable via the quadratic equation. However, for a hot plasma where finite-temperature effects must be included, the problem becomes one of non-linear root finding with a rather complex objective function. As such, dispersion solvers for hot magnetized plasmas are not readily available. This repository aims to make available this capability for Matlab.  
 
-``dispersioneering`` is a Matlab package for calculating the general dispersion relation for hot or cold magnetized plasmas. It allows 1-D specification of plasma profiles of magnetic field $B(x)$ (T), density $n(x)$ (m^-3), and temperature $T(x)$ (eV) for an aribtrary number of species at a specified frequency. It calculates both hot and cold solutions, with the harmonic number an input parameter for the hot calculation. 
 
 signed to provide a class-based and user-friendly interface to fast (C or
 Cython-optimized) implementations of common operations such as gravitational
