@@ -1,47 +1,36 @@
 ---
-title: 'Gala: A Python package for galactic dynamics'
+title: 'dispersioneering: A Matlab package for the dispersion relation of magnetized plasmas'
 tags:
-  - Python
-  - astronomy
-  - dynamics
-  - galactic dynamics
-  - milky way
+  - Matlab
+  - plasma physics
+  - dispersion relation
+  - magnetized
+  - hot plasma
+  - cold plasma
+  - kinetic effects
 authors:
-  - name: Adrian M. Price-Whelan
-    orcid: 0000-0003-0872-7098
-    affiliation: "1, 2" # (Multiple affiliations must be quoted)
-  - name: Author Without ORCID
-    affiliation: 2
+  - name: David L. Green
+    orcid: 0000-0003-3107-1170
+    affiliation: "1" # (Multiple affiliations must be quoted)
 affiliations:
- - name: Lyman Spitzer, Jr. Fellow, Princeton University
+ - name: Oak Ridge National Laboratory
    index: 1
- - name: Institution 2
-   index: 2
-date: 13 August 2017
+date: 02 January 2020
 bibliography: paper.bib
 
 # Optional fields if submitting to a AAS journal too, see this blog post:
 # https://blog.joss.theoj.org/2018/12/a-new-collaboration-with-aas-publishing
-aas-doi: 10.3847/xxxxx <- update this with the DOI from AAS once you know it.
-aas-journal: Astrophysical Journal <- The name of the AAS journal.
+# aas-doi: 10.3847/xxxxx <- update this with the DOI from AAS once you know it.
+# aas-journal: Astrophysical Journal <- The name of the AAS journal.
 ---
 
 # Summary
 
-The forces on stars, galaxies, and dark matter under external gravitational
-fields lead to the dynamical evolution of structures in the universe. The orbits
-of these bodies are therefore key to understanding the formation, history, and
-future state of galaxies. The field of "galactic dynamics," which aims to model
-the gravitating components of galaxies to study their structure and evolution,
-is now well-established, commonly taught, and frequently used in astronomy.
-Aside from toy problems and demonstrations, the majority of problems require
-efficient numerical tools, many of which require the same base code (e.g., for
-performing numerical orbit integration).
+It is often of interest to plasma physicists to know which plasma waves can propagate in a magnetized plasma at a given frequency. The calculation of such reduces to solving for which $k_{\perpendicular}$ (or $k_{\parallel}$) the 0-D time-harmonic wave equation operator has zero determinant. For a cold (i.e., no finite-temperature effects) magnetized plasma, simple analytic polynomial expressions for this problem are available in several texts `[@stix:2001; @brambilla:2001; @swanson:1999]` and $k_{\perp}(\omega)$ (or $k_{\parallel}(\omega)$) being solveable via the quadratic equation. However, for a hot plasma where finite-temperature effects must be included, the problem becomes one of non-linear root finding with a rather complex objective function. As such, dispersion solvers for hot magnetized plasmas are not readily available. This repository aims to make available this capability for Matlab.  
 
-``Gala`` is an Astropy-affiliated Python package for galactic dynamics. Python
-enables wrapping low-level languages (e.g., C) for speed without losing
-flexibility or ease-of-use in the user-interface. The API for ``Gala`` was
-designed to provide a class-based and user-friendly interface to fast (C or
+``dispersioneering`` is a Matlab package for calculating the general dispersion relation for hot or cold magnetized plasmas. It allows 1-D specification of plasma profiles of magnetic field $B(x)$ (T), density $n(x)$ (m^-3), and temperature $T(x)$ (eV) for an aribtrary number of species at a specified frequency. It calculates both hot and cold solutions, with the harmonic number an input parameter for the hot calculation. 
+
+signed to provide a class-based and user-friendly interface to fast (C or
 Cython-optimized) implementations of common operations such as gravitational
 potential and force evaluation, orbit integration, dynamical transformations,
 and chaos indicators for nonlinear dynamics. ``Gala`` also relies heavily on and
