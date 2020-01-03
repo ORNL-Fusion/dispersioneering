@@ -157,25 +157,25 @@ disp([' ']);
 
     function [det,det_gradient] = det_fun(n_per)       
         
-    % Cold    
+    % Cold dielectric
         
-%     [eps,sigma,S,D,P,R,L] = epsilon_cold(f, amu, Z, B0, n0);
+    % [eps,sigma,S,D,P,R,L] = epsilon_cold(f, amu, Z, B0, n0);
+
+    % Quadratic form for determinant (works only for cold)
+    % from pg 177 of Brambilla
+    %     
+    % A1a = S;
+    % B1a = R*L + P*S - n_par^2 * (P+S);
+    % C1a = P*(n_par^2-R)*(n_par^2-L);
+    % 
+    % det = A1a .* n_per^4 - B1a .* n_per^2 + C1a; 
     
-    % Hot
+    % Hot dielectric
     
     k_per = n_per .* w / c;
     [eps] = epsilon_hot(f, amu, Z, B0, n0, T_eV, k_per, k_par);
     
-    % Quadratic form for determinant
-    % From pg 177 Brambilla
-%     
-%     A1a = S;
-%     B1a = R*L + P*S - n_par^2 * (P+S);
-%     C1a = P*(n_par^2-R)*(n_par^2-L);
-%     
-%     det = A1a .* n_per^4 - B1a .* n_per^2 + C1a;   
-    
-    % Generalized determinant  
+    % Generalized determinant (works for hot or cold)
     
     exx = squeeze(eps(1,1,:));
     exy = squeeze(eps(1,2,:));
