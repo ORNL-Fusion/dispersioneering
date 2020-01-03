@@ -19,7 +19,7 @@ amu = [me_amu, 2];
 Z   = [-1,1];
 T_eV = [10,10];
 
-num_points = 20;
+num_points = 50;
 x = linspace(0,0.1,num_points);
 
 % B field
@@ -29,7 +29,6 @@ B = x.*0 + 1.2;
 % Density
 
 den = 10.^linspace(18,20,num_points);
-% den = 10.^linspace(19.3,19.8,num_points);
 
 n = [den; den];
 
@@ -55,48 +54,42 @@ end
 
 % k_per range
 
-num_k_per = 5;
+num_init_k_per = 10;
 
-k_per_min = 0;
+k_per_min = -1000;
 k_per_max = +1000;
 
-k_per = linspace(k_per_min,k_per_max,num_k_per);
-
-det_array = zeros(num_k_per,num_points);
-
-for k=1:num_k_per
-    
-    n_per = k_per(k) * c / w;
-    
-    det_array(k,:) = A1 .* n_per^4 - B1 .* n_per^2 + C1;
-    
-end
-
-
+k_per = linspace(k_per_min,k_per_max,num_init_k_per);
 
 % Try a root finder approach
+
+n_per_out = complex(zeros(num_points,num_init_k_per^2),zeros(num_points,num_init_k_per^2));
+
+initial_k_pers = linspace(k_per_min,k_per_max,num_init_k_per);
+
+
+options = optimoptions('fsolve',...
+    'Display','none',...
+    'SpecifyObjectiveGradient',false,...
+    'CheckGradients',false,...
+    'UseParallel',false,...
+    'StepTolerance',1e-6,...
+    'FunctionTolerance',1e-6,...
+    'OptimalityTolerance',1e-6);
 
 for i=1:num_points
      
     B0 = B(i);
     n0 = n(:,i);
-        
-    initial_k_pers = linspace(k_per_min,k_per_max,num_k_per);
-    num_init_k_per = numel(initial_k_pers);
     
     cnt = 1;
     for k = 1:num_init_k_per
         for j = 1:num_init_k_per
-                        
+            
             n_per_init_re = initial_k_pers(k) * c / w;
             n_per_init_im = initial_k_pers(j) * c / w;
-           
-            n_per_init = n_per_init_re + n_per_init_im*zi;
             
-            options = optimoptions('fsolve',...
-                'Display','none',...
-                'SpecifyObjectiveGradient',false,...
-                'CheckGradients',false);
+            n_per_init = n_per_init_re + n_per_init_im*zi;
             
             [n_per_out(i,cnt),fval,exitflag,output] = ...
                 fsolve(@det_fun,n_per_init,options);
@@ -170,7 +163,7 @@ disp([' ']);
     
     % Hot
     
-    k_per = n_per * w / c;
+    k_per = n_per .* w / c;
     [eps] = epsilon_hot(f, amu, Z, B0, n0, T_eV, k_per, k_par);
     
     % Quadratic form for determinant
@@ -184,25 +177,29 @@ disp([' ']);
     
     % Generalized determinant  
     
-    exx = eps(1,1);
-    exy = eps(1,2);
-    exz = eps(1,3);
+    exx = squeeze(eps(1,1,:));
+    exy = squeeze(eps(1,2,:));
+    exz = squeeze(eps(1,3,:));
     
-    eyx = eps(2,1);
-    eyy = eps(2,2);
-    eyz = eps(2,3);
+    eyx = squeeze(eps(2,1,:));
+    eyy = squeeze(eps(2,2,:));
+    eyz = squeeze(eps(2,3,:));
     
-    ezx = eps(3,1);
-    ezy = eps(3,2);
-    ezz = eps(3,3);
-    
-    kx = n_per * w/c;
-    kz = n_par * w/c; 
+    ezx = squeeze(eps(3,1,:));
+    ezy = squeeze(eps(3,2,:));
+    ezz = squeeze(eps(3,3,:));
+          
+    kx = n_per .* w./c;
+    kz = n_par .* w./c; 
     k0 = w/c;
+    
+    sz = size(exx);
+    assert(numel(n_per)==numel(exx));
+    kx = reshape(kx,sz);
     
     det = -(ezy.*k0.^4.*((exz.*eyx - exx.*eyz).*k0.^2 + eyx.*kx.*kz + eyz.*kz.^2)) + ...
         (-(ezx.*k0.^2) - kx.*kz).* ...
-        (exy.*eyz.*k0^4 + exz.*k0.^2.*(-(eyy.*k0.^2) + kx.^2 + kz.^2) + ...
+        (exy.*eyz.*k0.^4 + exz.*k0.^2.*(-(eyy.*k0.^2) + kx.^2 + kz.^2) + ...
         kx.*kz.*(-(eyy.*k0.^2) + kx.^2 + kz.^2)) + ...
         (-(ezz.*k0.^2) + kx.^2).* ...
         (-(exy.*eyx.*k0.^4) + (-(exx.*k0.^2) + kz.^2).* ...

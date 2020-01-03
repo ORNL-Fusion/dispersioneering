@@ -1,5 +1,9 @@
 function [epsilon,sigma,S,D,P,R,L] = epsilon_hot (f, amu, Z, B, density, T_eV, k_per, k_par)
 
+% this variant is vectorized over k_per
+
+num_k_per = numel(k_per);
+
 harmonic_number = 3;
 nu_omg = 0;
 
@@ -20,19 +24,18 @@ if isempty(Z_interp)
 end
 
 % catch for zero k_per argument 
-if abs(k_per) < 1e-5
-    k_per_sign = sign(k_per);
-    if abs(k_per_sign) < 1
-        k_per_sign = 1;
-    end
-    k_per = 1e-5*k_per_sign;
+zero_indices =  find(abs(k_per) < 1e-5);
+k_per_sign = sign(k_per(zero_indices));
+if abs(k_per_sign) < 1
+    k_per_sign = 1;
 end
+k_per(zero_indices) = 1e-5.*k_per_sign;
 
 w = 2*pi*f;
 m = amu * amu0;
 q = Z * e;
-n_par = c * k_par / w;
-n_per = c * k_per / w;
+n_par = c .* k_par ./ w;
+n_per = c .* k_per ./ w;
 
 num_spec = numel(amu);
 
@@ -50,7 +53,7 @@ for alp = 1:num_spec
     wp = sqrt( density(alp) * q(alp)^2 / ( m(alp) * eps0 ) );
     v_th = sqrt( 2 * T_eV(alp) * e / m(alp) );
     
-    lambda = k_per^2 * v_th^2 / (2 * wc^2);
+    lambda = k_per.^2 .* v_th^2 ./ (2 * wc^2);
     
     Ssum = 0;
     Dsum = 0;
@@ -87,7 +90,8 @@ for alp = 1:num_spec
 %         [Z,Zp] = z_function(x,Zeta_C);
         
         In = besseli(n,lambda);
-        Inp = besseli_prime(n,lambda);
+%         Inp = besseli_prime(n,lambda);
+        Inp = besseli(n-1,lambda) - n./lambda .* besseli(n,lambda);
         
         Ssum = Ssum + n.^2 ./ lambda .* In .* exp(-lambda) .* (-x0.*Z);
         Dsum = Dsum + n .* ( Inp - In ) .* exp(-lambda) .* (-x0 .* Z );
@@ -127,23 +131,25 @@ ezx = n_par .* n_per .* eta_hat;
 ezy = -i .* n_par .* n_per .* eps_hat;
 ezz = Phat;
 
-epsilon_r = zeros(3,3);
+epsilon_r = zeros(3,3,num_k_per);
 epsilon = complex(epsilon_r,0);
 sigma = epsilon;
 
-epsilon(1,1) = exx;
-epsilon(1,2) = exy;
-epsilon(1,3) = exz;
+epsilon(1,1,:) = exx;
+epsilon(1,2,:) = exy;
+epsilon(1,3,:) = exz;
 
-epsilon(2,1) = eyx;
-epsilon(2,2) = eyy;
-epsilon(2,3) = eyz;
+epsilon(2,1,:) = eyx;
+epsilon(2,2,:) = eyy;
+epsilon(2,3,:) = eyz;
 
-epsilon(3,1) = ezx;
-epsilon(3,2) = ezy;
-epsilon(3,3) = ezz;
+epsilon(3,1,:) = ezx;
+epsilon(3,2,:) = ezy;
+epsilon(3,3,:) = ezz;
 
-sigma = (epsilon - eye(3)) * w * eps0 / i;
+for n=1:num_k_per
+    sigma(:,:,n) = (epsilon(:,:,n) - eye(3)) * w * eps0 / i;
+end
 
 end
 
