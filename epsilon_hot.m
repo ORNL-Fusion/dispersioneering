@@ -72,10 +72,22 @@ for alp = 1:num_spec
         
         Zeta_C = (nu_omg * w) / (k_par * v_th);
         
-        this_Z_re = Z_interp.Z_re(x);
-        this_Z_im = Z_interp.Z_im(x);
-        this_Zp_re = Z_interp.Zp_re(x);
-        this_Zp_im = Z_interp.Zp_im(x);
+        if is_octave()
+%            this_Z_re  = ppval(Z_interp.Z_re,x);
+%            this_Z_im  = ppval(Z_interp.Z_im,x);
+%            this_Zp_re = ppval(Z_interp.Zp_re,x);
+%            this_Zp_im = ppval(Z_interp.Zp_im,x);
+            
+            this_Z_re  = interp1 (Z_interp.table_arg_re, Z_interp.table_Z_re, x);
+            this_Z_im  = interp1 (Z_interp.table_arg_re, Z_interp.table_Z_im, x);
+            this_Zp_re = interp1 (Z_interp.table_arg_re, Z_interp.table_Zp_re, x);
+            this_Zp_im = interp1 (Z_interp.table_arg_re, Z_interp.table_Zp_im, x);
+        else
+            this_Z_re  = Z_interp.Z_re(x);
+            this_Z_im  = Z_interp.Z_im(x);
+            this_Zp_re = Z_interp.Zp_re(x);
+            this_Zp_im = Z_interp.Zp_im(x);           
+        end
         
         Z = complex(this_Z_re,this_Z_im);
         Zp = complex(this_Zp_re,this_Zp_im);
