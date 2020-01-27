@@ -6,31 +6,40 @@ c = phys.('c');
 me_amu = phys.('me_amu');
 zi = complex(0,1);
 
-% Map the space over a variable - here B
-
-f = 7.5e6;
-w = 2*pi*f;
-k_par = 20;
-n_par = k_par * c / w;
-
-% Species
-
-amu = [me_amu, 2];
-Z   = [-1,1];
-T_eV = [0.01,0.01];
-
-num_points = 50;
+num_points = 1;
 x = linspace(0,1,num_points);
 
-% B field
-
+% Don's case 1
+f = 7.5e6;
+k_par = 20;
+amu = [me_amu, 2];
+Z   = [-1,1];
+T_eV = [500,500];
 B = x.*0 + 1.2;
-
-% Density
-
-den = 10.^linspace(18,20,num_points);
-
+den = x.*0 + 1e20;
 n = [den; den];
+% 
+% f = 7.5e6;
+% k_par = 20;
+% amu = [me_amu, 2];
+% Z   = [-1,1];
+% T_eV = [500,500];
+% B = x.*0 + 1.2;
+% den = 10.^linspace(19,20,num_points);
+% n = [den; den];
+
+% % Case A
+% f = 7.5e6;
+% k_par = 20;
+% amu = [me_amu, 2];
+% Z   = [-1,1];
+% T_eV = [50,50];
+% B = x.*0 + 1.2;
+% den = 10.^linspace(18,19,num_points);
+% n = [den; den];
+
+w = 2*pi*f;
+n_par = k_par * c / w;
 
 % Produce 2D space over k_per and B
 
@@ -49,8 +58,8 @@ for i=1:num_points
     % From pg 177 Brambilla
     
     A1(i) = S;
-    B1(i) = R*L + P*S - n_par^2 * (P+S);
-    C1(i) = P*(n_par^2-R)*(n_par^2-L);
+    B1(i) = -1.*(R.*L + P.*S - n_par.^2 .* (P+S)); % note the -sign here
+    C1(i) = P.*(n_par.^2-R).*(n_par.^2-L);
     
 end
 
@@ -58,11 +67,6 @@ n_per_1 = +sqrt((-B1 + sqrt(B1.^2-4.*A1.*C1))./(2.*A1));
 n_per_2 = +sqrt((-B1 - sqrt(B1.^2-4.*A1.*C1))./(2.*A1));
 n_per_3 = -sqrt((-B1 + sqrt(B1.^2-4.*A1.*C1))./(2.*A1));
 n_per_4 = -sqrt((-B1 - sqrt(B1.^2-4.*A1.*C1))./(2.*A1));
-
-n_per_1 = 1i*conj(n_per_1);
-n_per_2 = 1i*conj(n_per_2);
-n_per_3 = 1i*conj(n_per_3);
-n_per_4 = 1i*conj(n_per_4);
 
 % root finder approach for general hot (or cold) plasma
 
@@ -82,13 +86,13 @@ if is_octave()
         'TolX',1e-3);
 else
     options = optimoptions('fsolve',...
-        'Display','none',...
+        'Display','iter',...
         'SpecifyObjectiveGradient',false,...
         'CheckGradients',false,...
         'UseParallel',false,...
-        'StepTolerance',1e-2,...
-        'FunctionTolerance',1e-2,...
-        'OptimalityTolerance',1e-3);
+        'StepTolerance',1e-6,...
+        'FunctionTolerance',1e-6,...
+        'OptimalityTolerance',1e-6);
 end
 
 params.w = w;
@@ -131,9 +135,11 @@ for i=1:num_points
         
     disp(['point ', num2str(i), ' of ', num2str(num_points)]);
     disp(['calculation time : ', num2str(toc)]);
-    disp(['n_per_out : ', num2str(n_per_out(i))]);
-    disp(['n_per_sq1 : ', num2str(n_per_1(i))]);
-    disp(['n_per_sq2 : ', num2str(n_per_2(i))]);
+    disp(['hot n_per_out : ', num2str(n_per_out(i))]);
+    disp(['cold n_per_1 : ', num2str(n_per_1(i))]);
+    disp(['cold n_per_2 : ', num2str(n_per_2(i))]);
+    disp(['cold n_per_3 : ', num2str(n_per_3(i))]);
+    disp(['cold n_per_4 : ', num2str(n_per_4(i))]);
     disp(['  ']);
     
 end
