@@ -9,14 +9,6 @@ zi = complex(0,1);
 
 x = linspace(0,1,opts.num_points);
 
-% % Don's case 1
-% f = 7.5e6;
-% k_par = 20;
-% amu = [me_amu, 2];
-% Z   = [-1,1];
-% B = x.*0 + 1.2;
-% den = 10.^linspace(19,20,num_points);
-
 B = params.B_func(x);
 
 num_species = numel(params.Z);
@@ -26,37 +18,17 @@ for s=1:num_species
     n(s,:) = params.den_m3_func{s}(x);
 end
 
-%
-% f = 7.5e6;
-% k_par = 20;
-% amu = [me_amu, 2];
-% Z   = [-1,1];
-% T_eV = [500,500];
-% B = x.*0 + 1.2;
-% den = 10.^linspace(19,20,num_points);
-% n = [den; den];
-
-% % Case A
-% f = 7.5e6;
-% k_par = 20;
-% amu = [me_amu, 2];
-% Z   = [-1,1];
-% T_eV = [50,50];
-% B = x.*0 + 1.2;
-% den = 10.^linspace(18,19,num_points);
-% n = [den; den];
-
 w = 2*pi*params.f;
 n_par = params.k_par * c / w;
 
 amu = cell2mat(params.amu);
 Z = cell2mat(params.Z);
 
-% Produce 2D space over k_per and B
-
 num_points = numel(B);
 
-% always solve the cold plasma dispersion relation via the quadratic formula
+
+
+%% Solve the cold plasma dispersion relation via the quadratic formula
 
 A1 = zeros(num_points,1);
 B1 = zeros(num_points,1);
@@ -79,7 +51,9 @@ n_per_2 = +sqrt((-B1 - sqrt(B1.^2-4.*A1.*C1))./(2.*A1));
 n_per_3 = -sqrt((-B1 + sqrt(B1.^2-4.*A1.*C1))./(2.*A1));
 n_per_4 = -sqrt((-B1 - sqrt(B1.^2-4.*A1.*C1))./(2.*A1));
 
-% plot the cold plasma k_per
+
+
+%% Plot the cold plasma k_per
 
 figs.profiles = figure();
 subplot(3,1,1)
@@ -87,41 +61,42 @@ plot(x,B);
 ylabel('B(T)');
 subplot(3,1,2)
 for s=1:num_species
-    semilogy(x,n(s,:));
+    plot(x,n(s,:));
     hold on
 end
 hold off
 ylabel('Density [m^-3]');
 subplot(3,1,3)
 plot(x,real(n_per_1).*w./c,'-','Color','black','LineWidth',2);
-%ylim([k_per_min,k_per_max]);v
+%ylim([kper_min,kper_max]);
 hold on
-plot(x,real(n_per_2).*w./c,'-','Color','black','LineWidth',2);
-plot(x,real(n_per_3).*w./c,'-','Color','black','LineWidth',2);
-plot(x,real(n_per_4).*w./c,'-','Color','black','LineWidth',2);
-plot(x,imag(n_per_1).*w./c,'-r','LineWidth',2);
-plot(x,imag(n_per_2).*w./c,'-r','LineWidth',2);
-plot(x,imag(n_per_3).*w./c,'-r','LineWidth',2);
-plot(x,imag(n_per_4).*w./c,'-r','LineWidth',2);
+plot(x,(real(n_per_2)).*w./c,'-','Color','black','LineWidth',2);
+plot(x,(real(n_per_3)).*w./c,'-','Color','black','LineWidth',2);
+plot(x,(real(n_per_4)).*w./c,'-','Color','black','LineWidth',2);
+plot(x,(imag(n_per_1)).*w./c,'-r','LineWidth',2);
+plot(x,(imag(n_per_2)).*w./c,'-r','LineWidth',2);
+plot(x,(imag(n_per_3)).*w./c,'-r','LineWidth',2);
+plot(x,(imag(n_per_4)).*w./c,'-r','LineWidth',2);
 
 ylabel('k_{per} [m^-1]');
 title('black=real, red=imag, solid=cold, symbols=root finder');
 
 
-% optinally also use a root finder approach for general hot (or cold) plasma
+
+%% Optinally also use a root finder approach for general hot (or cold) plasma
 
 if opts.use_root_finder
     
     % k_per range
     
-    num_init_k_per = 5;
+    num_init_kper = opts.num_init_kper;
     
-    k_per_min = -10000;
-    k_per_max = +10000;
+    kper_min = opts.kper_min;
+    kper_max = opts.kper_max;
     
-    n_per_out = complex(zeros(num_points,num_init_k_per^2),zeros(num_points,num_init_k_per^2));
+    n_per_out = complex(zeros(num_points,num_init_kper^2),zeros(num_points,num_init_kper^2));
     
-    initial_k_pers = linspace(k_per_min,k_per_max,num_init_k_per);
+    initial_k_pers = linspace(kper_min,kper_max,num_init_kper);
     
     if is_octave()
         options = optimset('Jacobian','false',...
@@ -132,9 +107,10 @@ if opts.use_root_finder
             'SpecifyObjectiveGradient',false,...
             'CheckGradients',false,...
             'UseParallel',false,...
-            'StepTolerance',1e-6,...
-            'FunctionTolerance',1e-6,...
-            'OptimalityTolerance',1e-6,...
+            'StepTolerance',1e-10,...
+            'FunctionTolerance',1e-10,...
+            'OptimalityTolerance',1e-10,...
+            'Diagnostics','on',...
             'FiniteDifferenceType','central');
     end
     
@@ -154,27 +130,26 @@ if opts.use_root_finder
         B0 = B(ii);
         n0 = n(:,ii);
         
-        % scan the [re,im] space of initial guesses of k_per for the root solver
-        
-        if ii==14
-            num_init_k_per2 = 100;
+        % Create plot data for the scan of the [re,im] space of initial
+        % guesses of k_per for the root solve for a particular point
+        look_at_point = 9;
+        if ii==look_at_point
+            num_init_kper2 = 200;
             
-            k_per_min2 = -1000;
-            k_per_max2 = +1000;
+            kper_min2 = opts.kper_min;
+            kper_max2 = opts.kper_max;
             
-            initial_k_pers2 = linspace(k_per_min2,k_per_max2,num_init_k_per2);
+            initial_k_pers2 = linspace(kper_min2,kper_max2,num_init_kper2);
             
             cnt = 1;
-            for k = 1:num_init_k_per2
-                for j = 1:num_init_k_per2
+            for k = 1:num_init_kper2
+                for j = 1:num_init_kper2
                     
                     n_per_init_re = initial_k_pers2(k) * c / w;
                     n_per_init_im = initial_k_pers2(j) * c / w;
                     
-                    %                 n_per_init = n_per_init_re + n_per_init_im*zi;
                     n_per_init(1) = n_per_init_re;
                     n_per_init(2) = n_per_init_im;
-                    
                     
                     point_params.B0 = B0;
                     point_params.n0 = n0;
@@ -184,40 +159,44 @@ if opts.use_root_finder
                     cnt = cnt + 1;
                     
                 end
-            end
-            
+            end          
         end
         
+        % Call the root finder for each point in the sampled (re,im) kper
+        % space
         cnt = 1;
-        for k = 1:num_init_k_per
-            for j = 1:num_init_k_per
+        for k = 1:num_init_kper
+            for j = 1:num_init_kper
                 
                 n_per_init_re = initial_k_pers(k) * c / w;
                 n_per_init_im = initial_k_pers(j) * c / w;
                 
-%                 n_per_init = n_per_init_re + n_per_init_im*zi;
-                 n_per_init(1) = n_per_init_re;
-                 n_per_init(2) = n_per_init_im;
-
-                
+                kper_re_start(k,j) = initial_k_pers(k);
+                kper_im_start(k,j) = initial_k_pers(j);
+                                
                 point_params.B0 = B0;
                 point_params.n0 = n0;
                 
-%                 det(k,j) = det_fun(n_per_init,point_params);
-                
-%                 [n_per_out(i,cnt),fval,exitflag,output] = ...
-%                     fsolve(@(x) det_fun(x,point_params),n_per_init,options);
-                [n_per_out(ii,1:2,cnt),fval,exitflag,output] = ...
-                    fsolve(@(x) det_fun(x,point_params),n_per_init,options);
-                
+                use_2D = true;             
+                if use_2D % 2D using re and im as seperate axes
+                    n_per_init(1) = n_per_init_re;
+                    n_per_init(2) = n_per_init_im;
+                    [n_per_out(ii,1:2,cnt),fval,exitflag,output] = fsolve(@(x) det_fun(x,point_params),n_per_init,options);
+                else % 1D using [re,im] as a single input
+                    n_per_init = n_per_init_re + n_per_init_im*zi;
+                    [n_per_out(i,cnt),fval,exitflag,output] = fsolve(@(x) det_fun(x,point_params),n_per_init,options);
+                end
                 cnt = cnt + 1;
                 
             end
         end
 
-        if ii==14
+        % Just plot up a [re,im] space of the determinant to see if the
+        % roots are found where they should be. 
+        if ii==look_at_point
             figure
-            contour(initial_k_pers2,initial_k_pers2,real(log10(abs(det))))
+%             contour(initial_k_pers2,initial_k_pers2,log10(abs(det)))
+              contour(initial_k_pers2,initial_k_pers2,det)
             hold on
             if numel(size(n_per_out))>2
                 rs_kxre = n_per_out(ii,1,:)*w/c;
@@ -226,7 +205,10 @@ if opts.use_root_finder
                 rs_kxre = real(n_per_out(ii,:))*w/c;
                 rs_kxim = imag(n_per_out(ii,:))*w/c;
             end
-            scatter(rs_kxim,rs_kxre,'SizeData',150,'LineWidth',2)
+            scatter(rs_kxim,rs_kxre,'SizeData',150,'LineWidth',5)
+            scatter(kper_im_start(:),kper_re_start(:));
+            xlabel('im(kper)')
+            ylabel('re(kper)')
             disp('here');
         end
         
@@ -256,7 +238,9 @@ if opts.use_root_finder
             p = plot(x,imag(n_per_out(:,ii)*w/c),'o','Color','red');
         end
     end
-%     ylim([k_per_min,k_per_max]);
+    yline(opts.kper_min)
+    yline(opts.kper_max)
+%     ylim([kper_min,kper_max]);
     
 end
 
@@ -277,7 +261,7 @@ hold off
 %     p = plot(den,imag(n_per_out(:,bb)*w/c),'o','Color','red',  'LineWidth',2);
 % end
 % hold off
-% ylim([k_per_min,k_per_max]);
+% ylim([kper_min,kper_max]);
 % symlog();
 % disp([' ']);
 
@@ -285,8 +269,7 @@ output = 0;
 
 end
 
-% Define the determinant for which the root solver will try to find the
-% roots of.
+%% Define the determinant for which the root solver will try to find the roots of.
 
 function [det_out,det_gradient] = det_fun(n_per_in,params)
 
@@ -412,6 +395,6 @@ else
     
 end
 
-det_out = abs(det_out);
+det_out = log10(abs(det_out)+1);
 
 end

@@ -5,9 +5,9 @@ classdef OPTS
         use_root_finder = false;
         use_cold_eps = true;
         use_cold_det = false;
-        num_init_k_per = 5;        
-        k_per_min = -1000;
-        k_per_max = +1000;
+        num_init_kper = 5;        
+        kper_min = -1000;
+        kper_max = +1000;
         num_points = 100;
         
     end
@@ -24,8 +24,10 @@ classdef OPTS
                 addOptional(input_parser,'use_root_finder',opts.use_root_finder,@islogical);
                 addOptional(input_parser,'use_cold_eps',opts.use_cold_eps,@islogical);               
                 addOptional(input_parser,'use_cold_det',opts.use_cold_det,@islogical);
-                addOptional(input_parser,'num_init_k_per',opts.num_init_k_per,@isnumeric);
+                addOptional(input_parser,'num_init_kper',opts.num_init_kper,@isnumeric);
                 addOptional(input_parser,'num_points',opts.num_points,@isnumeric);
+                addOptional(input_parser,'kper_min',opts.kper_min,@isnumeric);
+                addOptional(input_parser,'kper_max',opts.kper_max,@isnumeric);
 
                 parse(input_parser,varargin{:}{:})
 

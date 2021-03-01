@@ -1,15 +1,15 @@
-function p = case1()
+function p = fast_wave()
 
 % run with
 %
 % cold only (via quadratic)
-% dispersioneering(@case1,'num_points',300,'use_root_finder',false,'use_cold_eps',false)
+% dispersioneering(@fast_wave,'num_points',300,'use_root_finder',false,'use_cold_eps',true)
 %
 % cold only (via quadratic and root finder - both using cold eps)
-% dispersioneering(@case1,'num_points',30,'use_root_finder',true,'use_cold_eps',eps)
+% dispersioneering(@fast_wave,'num_points',30,'use_root_finder',true,'use_cold_eps',eps)
 %
 % cold and hot
-% dispersioneering(@case1,'num_points',30,'use_root_finder',true,'use_cold_eps',false)
+% dispersioneering(@fast_wave,'num_points',30,'use_root_finder',true,'use_cold_eps',false)
 
 phys = constants();
 
@@ -19,13 +19,13 @@ zi = complex(0,1);
 
 % cold parameters
 
-f = 7.5e6;
-amu = {me_amu, 2};
+f = 52e6;
+amu = {me_amu, 1};
 Z   = {-1,1};
 
-B_func = @(x) x.*0 + 1.2;
+B_func = @(x) x.*0 + 2.5; % T
 
-den = @(x) 10.^(x*10+12);
+den = @(x) 10.^(x*4+16);
 
 den_m3_func = {den, den};
 
