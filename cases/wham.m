@@ -23,7 +23,7 @@ f = 27.1e6;
 amu = {me_amu, 2}; % D plasma?
 Z   = {-1,1};
 
-B_func = @(x) x.*0 + 0.8; % T
+B_func = @(x) x.*0 + 0.6; % T
 
 den = @(x) 10.^(x*2+18); % 10.^(x*span+min) where span and min are powers of 10
 
